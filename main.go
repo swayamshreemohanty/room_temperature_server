@@ -4,13 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 	. "room_status/temp/controller"
 	. "room_status/temp/db"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -93,33 +91,6 @@ func main() {
 
 	router := gin.Default()
 	versionOne:=router.Group("/swayamroom/v1/")
-	
 	tempController.RegisterTempManagerRoutes(versionOne)
-    router.GET("/ws", func(c *gin.Context) {
-        wshandler(c.Writer, c.Request)
-    })
-
     router.Run("0.0.0.0:8000")
-}
-
-var wsupgrader = websocket.Upgrader{
-    ReadBufferSize:  1024,
-    WriteBufferSize: 1024,
-}
-
-func wshandler(w http.ResponseWriter, r *http.Request) {
-    conn, err := wsupgrader.Upgrade(w, r, nil)
-    if err != nil {
-        fmt.Println("Failed to set websocket upgrade: %+v", err)
-        return
-    }
-
-    for {
-        t, msg, err := conn.ReadMessage()
-		fmt.Println("**")
-        if err != nil {
-            break
-        }
-        conn.WriteMessage(t, msg)
-    }
 }
