@@ -48,7 +48,7 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
 
 func connectMQTT()(mqtt.Client){
 //
-var broker = "192.168.0.60"
+var broker = "192.168.0.2"
 var port = 1883
 opts := mqtt.NewClientOptions()
 opts.AddBroker(fmt.Sprintf("tcp://%s:%d", broker, port))
