@@ -13,7 +13,7 @@ import (
 	"github.com/gorilla/websocket"
 	"gopkg.in/mgo.v2/bson"
 )
-
+var clients = make(map[*websocket.Conn]bool)
 type TempController struct {
 	tempMongoService TempMongoService
 	mqttClient mqtt.Client
@@ -32,7 +32,13 @@ func (tempController *TempController)SubscribedTempStatus(tempData string )  {
 		tempController.mqttClient.Publish("rpi_sender",0,false,text);
 		return
 	}
+
 	tempController.mqttClient.Publish("rpi_sender",0,false,*message);
+	err= tempController.broadCastInWebSocket()
+	if err!=nil {
+		log.Println(err)
+		return
+	}
 }
 
 func (tempController *TempController)ReadTempStatus(c *gin.Context)  {
@@ -53,9 +59,6 @@ func (tempController *TempController)ReadTempStatus(c *gin.Context)  {
 }
 
 
-// define a reader which will listen for
-// new messages being sent to our WebSocket
-// endpoint
 
 func convertTempModelToByte(tempModel *TempModel)([]byte,error){
 	body:=bson.M{"data":tempModel}
@@ -67,38 +70,35 @@ func convertTempModelToByte(tempModel *TempModel)([]byte,error){
 	}
 }
 
-func (tempController *TempController)sendTempDetailsInWebSocket(conn *websocket.Conn)  {
+//WebSockets
+func (tempController *TempController)sendTempDetailsInWebSocket(conn *websocket.Conn)error  {
 	var tempModel *TempModel
-				tempModel,err:=tempController.tempMongoService.FetchTempDetails()
-				if err!=nil{
-					return
-				}
-				body,err:=convertTempModelToByte(tempModel)
-				if err==nil{
-					if err := conn.WriteMessage(websocket.TextMessage, []byte(body)); err != nil {
-						log.Println(err)
-						return
-					}
-				}
+	tempModel,err:=tempController.tempMongoService.FetchTempDetails()
+	if err!=nil{
+		return err
+	}
+	body,err:=convertTempModelToByte(tempModel)
+	if err==nil{
+		if err := conn.WriteMessage(websocket.TextMessage, []byte(body)); err != nil {
+			log.Println(err)
+			return err
+		}
+	}
+	return err
 }
 
-func(tempController *TempController) reader(conn *websocket.Conn) {
-    for {
-
-    // read in a message
-        _, p, err := conn.ReadMessage()
-        if err != nil {
-            log.Println(err)
-            return
-        }
-		tempController.sendTempDetailsInWebSocket(conn)
-    	// print out that message for clarity
-		// fmt.Println(string(p))
-
-		if string(p)=="start" {
-			tempController.sendTempDetailsInWebSocket(conn)
+func(tempController *TempController) broadCastInWebSocket()(error) {
+		for client :=range clients{
+			err:=tempController.sendTempDetailsInWebSocket(client)
+				if err!=nil {
+					log.Println(err)
+					//Close the client if unable to send data
+					client.Close()
+					delete(clients, client)
+				return err
+			}	
 		}
-    }
+		return nil
 }
 
 func (tempController *TempController)WebSocketHandler(w http.ResponseWriter, r *http.Request) {
@@ -116,8 +116,7 @@ func (tempController *TempController)WebSocketHandler(w http.ResponseWriter, r *
     // if err != nil {
     //     log.Println(err)
     // }
-
-	tempController.reader(ws)
+	clients[ws]=true
 }
 
 func (tempController *TempController) RegisterTempManagerRoutes(ginRouter *gin.RouterGroup) {
