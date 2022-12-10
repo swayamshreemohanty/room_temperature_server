@@ -34,7 +34,7 @@ func (tempController *TempController)SubscribedTempStatus(tempData string )  {
 	}
 
 	tempController.mqttClient.Publish("rpi_sender",0,false,*message);
-	err= tempController.broadCastInWebSocket()
+	err= tempController.broadCastTempDataInWebSocket()
 	if err!=nil {
 		log.Println(err)
 		return
@@ -87,7 +87,7 @@ func (tempController *TempController)sendTempDetailsInWebSocket(conn *websocket.
 	return err
 }
 
-func(tempController *TempController) broadCastInWebSocket()(error) {
+func(tempController *TempController) broadCastTempDataInWebSocket()(error) {
 		for client :=range clients{
 			err:=tempController.sendTempDetailsInWebSocket(client)
 				if err!=nil {
@@ -116,6 +116,11 @@ func (tempController *TempController)WebSocketHandler(w http.ResponseWriter, r *
     // if err != nil {
     //     log.Println(err)
     // }
+	err= tempController.broadCastTempDataInWebSocket()
+	if err!=nil {
+		log.Println(err)
+		return
+	}
 	clients[ws]=true
 }
 
