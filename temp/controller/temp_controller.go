@@ -84,27 +84,20 @@ func (tempController *TempController)sendTempDetailsInWebSocket(conn *websocket.
 
 func(tempController *TempController) reader(conn *websocket.Conn) {
     for {
-        fmt.Println("11111111111111111111")
 
     // read in a message
-        messageType, p, err := conn.ReadMessage()
+        _, p, err := conn.ReadMessage()
         if err != nil {
             log.Println(err)
             return
         }
 		tempController.sendTempDetailsInWebSocket(conn)
-    // print out that message for clarity
-        fmt.Println("*******************************")
-        fmt.Println(messageType)
-        fmt.Println(string(p))
+    	// print out that message for clarity
+		// fmt.Println(string(p))
 
 		if string(p)=="start" {
-			fmt.Println("@@@@@")
 			tempController.sendTempDetailsInWebSocket(conn)
 		}
-
-      
-
     }
 }
 
