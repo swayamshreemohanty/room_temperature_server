@@ -74,6 +74,8 @@ func convertTempModelToByte(tempModel *TempModel)([]byte,error){
 func (tempController *TempController)sendTempDetailsInWebSocket(conn *websocket.Conn)error  {
 	var tempModel *TempModel
 	tempModel,err:=tempController.tempMongoService.FetchTempDetails()
+	log.Println("333333333333333333333333333333")
+	log.Println(tempModel.Temperature)
 	if err!=nil{
 		return err
 	}
@@ -88,6 +90,8 @@ func (tempController *TempController)sendTempDetailsInWebSocket(conn *websocket.
 }
 
 func(tempController *TempController) broadCastTempDataInWebSocket()(error) {
+	log.Println("2222222222222")
+
 		for client :=range clients{
 			err:=tempController.sendTempDetailsInWebSocket(client)
 				if err!=nil {
@@ -112,16 +116,21 @@ func (tempController *TempController)WebSocketHandler(w http.ResponseWriter, r *
     }
 
 	log.Println("Client Connected")
+
+	//Add the current websocket
+	clients[ws]=true
+
+
     // err = ws.WriteMessage(1, []byte("Hi Client!"))
     // if err != nil {
     //     log.Println(err)
     // }
+
 	err= tempController.broadCastTempDataInWebSocket()
 	if err!=nil {
 		log.Println(err)
 		return
 	}
-	clients[ws]=true
 }
 
 func (tempController *TempController) RegisterTempManagerRoutes(ginRouter *gin.RouterGroup) {
