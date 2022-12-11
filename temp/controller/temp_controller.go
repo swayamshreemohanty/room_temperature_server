@@ -116,14 +116,11 @@ func (tempController *TempController)WebSocketHandler(w http.ResponseWriter, r *
 	//Add the current websocket
 	clients[ws]=true
 
-	log.Println("*************")
 
-    err = ws.WriteMessage(1, []byte("Hi Client!"))
-    if err != nil {
-	log.Println("!!!!!!!!!!!!!!!")
-
-        log.Println(err)
-    }
+    // err = ws.WriteMessage(1, []byte("Hi Client!"))
+    // if err != nil {
+    //     log.Println(err)
+    // }
 
 	err= tempController.broadCastTempDataInWebSocket()
 	if err!=nil {
