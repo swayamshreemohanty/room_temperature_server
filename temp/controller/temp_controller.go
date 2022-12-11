@@ -124,6 +124,7 @@ func (tempController *TempController)WebSocketHandler(w http.ResponseWriter, r *
 
 	err= tempController.broadCastTempDataInWebSocket()
 	if err!=nil {
+		log.Println("**************")
 		log.Println(err)
 		return
 	}
