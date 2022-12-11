@@ -85,6 +85,10 @@ func init() {
 }
 
 func main() {
+	//Commit to remove release mode//
+	gin.SetMode(gin.ReleaseMode)
+	//------------------//
+	
 	client:=connectMQTT()
 	tempMongoService:=TempMongoServiceInit(ctx,mongoClient)
 	tempController=	TempNewController(client,tempMongoService)
