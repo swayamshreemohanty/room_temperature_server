@@ -120,6 +120,8 @@ func (tempController *TempController)WebSocketHandler(w http.ResponseWriter, r *
 
     err = ws.WriteMessage(1, []byte("Hi Client!"))
     if err != nil {
+	log.Println("!!!!!!!!!!!!!!!")
+
         log.Println(err)
     }
 
