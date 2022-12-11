@@ -96,5 +96,5 @@ func main() {
 	router := gin.Default()
 	versionOne:=router.Group("/swayamroom/v1/")
 	tempController.RegisterTempManagerRoutes(versionOne)
-    router.Run("0.0.0.0:8000")
+    router.Run(":8000")
 }
