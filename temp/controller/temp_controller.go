@@ -102,7 +102,6 @@ func(tempController *TempController) broadCastTempDataInWebSocket()(error) {
 }
 
 func (tempController *TempController)WebSocketHandler(w http.ResponseWriter, r *http.Request) {
-	http.ListenAndServe(":80",nil)
     upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
 	//upgrade this connection to a WebSocket
